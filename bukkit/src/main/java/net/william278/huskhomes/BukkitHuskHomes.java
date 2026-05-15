@@ -28,6 +28,7 @@ import lombok.Setter;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.AudienceProvider;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import io.papermc.lib.PaperLib;
 import net.william278.desertwell.util.Version;
 import net.william278.huskhomes.api.HuskHomesAPI;
 import net.william278.huskhomes.command.BukkitCommand;
@@ -59,6 +60,7 @@ import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
@@ -285,6 +287,14 @@ public class BukkitHuskHomes extends JavaPlugin implements HuskHomes, BukkitTask
             return;
         }
         getLogger().log(level, message);
+    }
+
+    public void teleportPlayer(@NotNull Player player, @NotNull org.bukkit.Location location, boolean async) {
+        if (async || getScheduler().isUsingFolia()) {
+            PaperLib.teleportAsync(player, location, PlayerTeleportEvent.TeleportCause.PLUGIN);
+            return;
+        }
+        player.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN);
     }
 
     @Override

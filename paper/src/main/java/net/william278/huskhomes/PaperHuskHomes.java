@@ -22,6 +22,7 @@ package net.william278.huskhomes;
 import net.kyori.adventure.audience.Audience;
 import net.william278.huskhomes.listener.PaperEventListener;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -40,4 +41,10 @@ public class PaperHuskHomes extends BukkitHuskHomes {
         final Player player = getServer().getPlayer(user);
         return player == null || !player.isOnline() ? Audience.empty() : player;
     }
+
+    @Override
+    public void teleportPlayer(@NotNull Player player, @NotNull org.bukkit.Location location, boolean async) {
+        player.teleportAsync(location, PlayerTeleportEvent.TeleportCause.PLUGIN);
+    }
+
 }
