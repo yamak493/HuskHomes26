@@ -1,3 +1,6 @@
+## ⚠️ This release is a workaround for HuskHomes to run on Minecraft version 26.x. Please immediately discontinue use of this release once HuskHomes officially releases version 26.x. It has been tested and confirmed to work with Paper, but not with Bukkit. ⚠️
+# [ >> Download << ](https://github.com/yamak493/HuskHomes26/releases)
+
 <!--suppress ALL -->
 <p align="center">
     <img src="images/banner.png" alt="HuskHomes" />
