@@ -46,6 +46,19 @@ public interface BukkitSavePositionProvider extends SavePositionProvider {
         }
 
         // Search nearby blocks for a safe location
+        // If the request is coming from a background thread, always retrieve the chunk snapshot on the main server thread.
+        // This avoids Folia async chunk retrieval issues where PaperLib.getChunkAtAsync may still require the main thread.
+        if (getPlugin() instanceof BukkitHuskHomes bukkitPlugin
+                && !bukkitPlugin.getServer().isPrimaryThread()) {
+            return getChunkSnapshotOnSyncThread(bukkitPlugin, bukkitLocation)
+                    .thenApply(snapshot -> findSafeLocationNear(
+                            location,
+                            snapshot,
+                            getMinHeight(bukkitLocation.getWorld()),
+                            getMaxHeight(bukkitLocation.getWorld())
+                    ));
+        }
+
         return PaperLib.getChunkAtAsync(bukkitLocation)
                 .thenApply(Chunk::getChunkSnapshot)
                 .thenApply(snapshot -> findSafeLocationNear(
@@ -54,6 +67,28 @@ public interface BukkitSavePositionProvider extends SavePositionProvider {
                         getMinHeight(bukkitLocation.getWorld()),
                         getMaxHeight(bukkitLocation.getWorld())
                 ));
+    }
+
+    private CompletableFuture<ChunkSnapshot> getChunkSnapshotOnSyncThread(
+            @NotNull BukkitHuskHomes plugin, @NotNull org.bukkit.Location location) {
+        final CompletableFuture<ChunkSnapshot> future = new CompletableFuture<>();
+        if (plugin.getServer().isPrimaryThread()) {
+            try {
+                future.complete(location.getChunk().getChunkSnapshot());
+            } catch (Throwable throwable) {
+                future.completeExceptionally(throwable);
+            }
+            return future;
+        }
+
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            try {
+                future.complete(location.getChunk().getChunkSnapshot());
+            } catch (Throwable throwable) {
+                future.completeExceptionally(throwable);
+            }
+        });
+        return future;
     }
 
     /**
